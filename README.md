@@ -1,5 +1,8 @@
 # GradApp
 
+<img width="1354" height="896" alt="image" src="https://github.com/user-attachments/assets/5626b64b-8ced-49c5-9cae-48f389ec7a86" />
+
+
 A multi-user tracker for graduate applications. Plain files only (JSON and CSV), no database, works offline.
 Track programs, professors and deadlines, build a profile from your resume with AI, score fit, and import
 research done by any AI through a ready-made prompt.
