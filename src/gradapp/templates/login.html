@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in - GradApp</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23E3A008%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-size=%2720%27 font-weight=%27700%27 text-anchor=%27middle%27 font-family=%27sans-serif%27 fill=%27%232A1D00%27%3EG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body class="auth-body">
+<main class="auth">
+  <section class="auth-intro" aria-hidden="true">
+    <div class="brand-mark">G</div>
+    <h1>Every program,<br>one clear list.</h1>
+    <p>Track deadlines, see how well each program fits you, and open official pages in one click.</p>
+  </section>
+  <section class="auth-card">
+    <div class="auth-tabs" role="tablist">
+      <button type="button" class="tab on" data-mode="login" role="tab">Sign in</button>
+      {% if allow_registration %}<button type="button" class="tab" data-mode="register" role="tab">Create account</button>{% endif %}
+    </div>
+    <form id="form" autocomplete="on">
+      <label class="field" id="f-display" hidden><span>Your name</span><input name="display_name" autocomplete="name"></label>
+      <label class="field"><span>Username</span><input name="username" autocomplete="username" required autofocus></label>
+      <label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required></label>
+      <p class="form-error" id="err" role="alert"></p>
+      <button class="btn primary wide" id="go" type="submit">Sign in</button>
+    </form>
+  </section>
+</main>
+<script>
+(function(){
+  var mode='login', form=document.getElementById('form'), err=document.getElementById('err'), go=document.getElementById('go');
+  document.querySelectorAll('.auth-tabs .tab').forEach(function(b){
+    b.addEventListener('click',function(){
+      mode=b.dataset.mode;
+      document.querySelectorAll('.auth-tabs .tab').forEach(function(x){x.classList.toggle('on',x===b)});
+      document.getElementById('f-display').hidden = mode!=='register';
+      form.password.autocomplete = mode==='register' ? 'new-password' : 'current-password';
+      go.textContent = mode==='register' ? 'Create account' : 'Sign in';
+      err.textContent='';
+    });
+  });
+  form.addEventListener('submit',function(e){
+    e.preventDefault(); err.textContent=''; go.disabled=true;
+    fetch(mode==='register' ? '/api/register' : '/api/login',{
+      method:'POST', headers:{'Content-Type':'application/json','X-GradApp':'1'},
+      body:JSON.stringify({username:form.username.value,password:form.password.value,display_name:form.display_name.value})
+    }).then(function(r){return r.json().then(function(j){return [r.ok,j]})}).then(function(x){
+      if(x[0]) location.href='/'; else {err.textContent=x[1].error||'Could not sign in.'; go.disabled=false;}
+    }).catch(function(){err.textContent='Cannot reach the server. Is app.py still running?'; go.disabled=false;});
+  });
+})();
+</script>
+</body>
+</html>

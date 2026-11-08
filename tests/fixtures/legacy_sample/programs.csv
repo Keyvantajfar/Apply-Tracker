@@ -1,0 +1,5 @@
+id,country,university,program,fit_score,apply,status
+p_m-sc-data-science,Germany,Example University of Technology,M.Sc. Data Science,92,false,verified
+p_a,Germany,Example University of Technology,M.Sc. A, B,92,false,verified
+p_b,Italy,Sample Institute of Physics,Postgraduate, Diploma,70,false,verified
+p_c,Spain,Unscored College,M.Sc. AI, unknown,,false,verified

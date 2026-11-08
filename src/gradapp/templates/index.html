@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GradApp</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23E3A008%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-size=%2720%27 font-weight=%27700%27 text-anchor=%27middle%27 font-family=%27sans-serif%27 fill=%27%232A1D00%27%3EG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+<div class="app" id="app">
+  <nav class="rail" id="rail" aria-label="Main"></nav>
+  <main class="main" id="main" tabindex="-1">
+    <div id="view"></div>
+  </main>
+</div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="modal-host" id="modal" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script>window.__USER__ = {{ user|tojson }};</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

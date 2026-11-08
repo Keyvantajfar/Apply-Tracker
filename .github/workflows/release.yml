@@ -1,0 +1,83 @@
+name: Release
+# I should push a tag such as v1.0.1 to publish: wheel + sdist, binaries for Linux/Windows/macOS, Docker image on ghcr.io.
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+  packages: write
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag must match gradapp.__version__
+        run: |
+          v=$(python -c "import re;print(re.search(r'__version__ = \"(.+?)\"',open('src/gradapp/__init__.py').read()).group(1))")
+          [ "v$v" = "${GITHUB_REF_NAME}" ] || { echo "tag ${GITHUB_REF_NAME} != version v$v"; exit 1; }
+  test:
+    needs: check-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e . && python -m unittest discover -s tests
+  python-package:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install build && python -m build
+      - uses: actions/upload-artifact@v4
+        with: { name: python-dist, path: dist/* }
+  binaries:
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - { os: ubuntu-latest }
+          - { os: windows-latest }
+          - { os: macos-latest }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - run: python packaging/build_binary.py
+      - name: Smoke test
+        shell: bash
+        run: |
+          f=$(ls dist/gradapp-*)
+          chmod +x "$f" || true
+          "$f" version
+      - uses: actions/upload-artifact@v4
+        with: { name: "binary-${{ matrix.os }}", path: "dist/gradapp-*" }
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - id: meta
+        uses: docker/metadata-action@v5
+        with: { images: "ghcr.io/${{ github.repository }}" }
+      - uses: docker/build-push-action@v6
+        with: { context: ., push: true, tags: "${{ steps.meta.outputs.tags }}", labels: "${{ steps.meta.outputs.labels }}" }
+  release:
+    needs: [python-package, binaries, docker]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts, merge-multiple: true }
+      - run: cd artifacts && sha256sum * > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true

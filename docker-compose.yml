@@ -1,0 +1,15 @@
+services:
+  gradapp:
+    build: .
+    # or: image: ghcr.io/OWNER/gradapp:latest
+    ports: ["127.0.0.1:5000:5000"]
+    volumes: ["gradapp-data:/data"]
+    environment:
+      # set a long random value so sessions survive container rebuilds:
+      # GRADAPP_SECRET_KEY: change-me
+      # set to 1 when served over HTTPS (reverse proxy):
+      # GRADAPP_HTTPS: "1"
+      GRADAPP_PORT: "5000"
+    restart: unless-stopped
+volumes:
+  gradapp-data:

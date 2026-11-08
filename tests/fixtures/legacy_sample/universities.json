@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "note": "synthetic sample"
+  },
+  "applicant_profile": {
+    "applicant": "Alex Example",
+    "degree": "B.Sc. Statistics, Example University",
+    "skills": "Python, statistics",
+    "goals": "Germany first, Spain as fallback"
+  },
+  "universities": [
+    {
+      "id": "example-tu",
+      "name": "Example University of Technology",
+      "city": "Exampletown",
+      "country": "Germany",
+      "batch": 1,
+      "programs": [
+        {
+          "admission_mode": "open",
+          "apply": false,
+          "deadlines": {
+            "winter": "15 Jan",
+            "summer": "15 Jul"
+          },
+          "degree": "Master",
+          "duration": "4 semesters",
+          "fit_score": 92,
+          "funding": "No tuition",
+          "gpa_rule": "",
+          "id": "p_m-sc-data-science",
+          "language": "English",
+          "name": "M.Sc. Data Science",
+          "notes": "Sample note, with a comma.",
+          "official_link": "https://example.edu/ds",
+          "risk_alert": "",
+          "sources": [
+            "https://example.edu/ds"
+          ],
+          "status": "verified on official page",
+          "tuition_eur_per_year": 0,
+          "fit_with_sample": "Good match for the sample applicant."
+        },
+        {
+          "admission_mode": "open",
+          "apply": false,
+          "deadlines": {
+            "winter": "15 Jan",
+            "summer": "15 Jul"
+          },
+          "degree": "Master",
+          "duration": "4 semesters",
+          "fit_score": 85,
+          "funding": "No tuition",
+          "gpa_rule": "",
+          "id": "p_m-sc-math",
+          "language": "English",
+          "name": "M.Sc. Industrial Mathematics",
+          "notes": "Sample note, with a comma.",
+          "official_link": "https://example.edu/math",
+          "risk_alert": "",
+          "sources": [
+            "https://example.edu/math"
+          ],
+          "status": "verified on official page",
+          "tuition_eur_per_year": 0,
+          "fit_with_sample": "Good match for the sample applicant."
+        }
+      ],
+      "professors": [
+        {
+          "affiliation": "Institute of Examples",
+          "email": "",
+          "id": "prof_ada-sample",
+          "name": "Ada Sample",
+          "notes": "",
+          "outreach_status": "Not Contacted",
+          "page": "https://example.edu/people",
+          "program_id": "p_m-sc-data-science",
+          "relevance_to_sample": "Works on the sample topic",
+          "research_interests": "examples, testing",
+          "sources": [],
+          "status": "not verified",
+          "title": "Professor"
+        }
+      ]
+    },
+    {
+      "id": "example-tu-dup",
+      "name": "Example University of Technology",
+      "city": "Exampletown",
+      "country": "Germany",
+      "batch": 2,
+      "programs": [
+        {
+          "admission_mode": "open",
+          "apply": false,
+          "deadlines": {
+            "winter": "15 Jan",
+            "summer": "15 Jul"
+          },
+          "degree": "Master",
+          "duration": "4 semesters",
+          "fit_score": null,
+          "funding": "No tuition",
+          "gpa_rule": "",
+          "id": "p_m-sc-data-science",
+          "language": "English",
+          "name": "M.Sc. Data Science",
+          "notes": "duplicate entry",
+          "official_link": "https://example.edu/ds",
+          "risk_alert": "",
+          "sources": [
+            "https://example.edu/ds"
+          ],
+          "status": "verified on official page",
+          "tuition_eur_per_year": 0,
+          "fit_with_sample": "Good match for the sample applicant."
+        }
+      ],
+      "professors": []
+    },
+    {
+      "id": "sample-institute",
+      "name": "Sample Institute of Physics",
+      "city": "Sampleville",
+      "country": "Italy",
+      "batch": 1,
+      "programs": [
+        {
+          "admission_mode": "open",
+          "apply": false,
+          "deadlines": {
+            "winter": "15 Jan",
+            "summer": "15 Jul"
+          },
+          "degree": "Master",
+          "duration": "4 semesters",
+          "fit_score": 70,
+          "funding": "No tuition",
+          "gpa_rule": "",
+          "id": "p_m-sc-data-science",
+          "language": "English",
+          "name": "Postgraduate Diploma in Computing",
+          "notes": "Sample note, with a comma.",
+          "official_link": "https://sample.example.org/pg",
+          "risk_alert": "",
+          "sources": [
+            "https://sample.example.org/pg"
+          ],
+          "status": "verified on official page",
+          "tuition_eur_per_year": 0,
+          "fit_with_sample": "Good match for the sample applicant."
+        }
+      ],
+      "professors": [
+        {
+          "affiliation": "Institute of Examples",
+          "email": "",
+          "id": "prof_bo-example",
+          "name": "Bo Example",
+          "notes": "",
+          "outreach_status": "Not Contacted",
+          "page": "https://example.edu/people",
+          "program_id": "",
+          "relevance_to_sample": "Works on the sample topic",
+          "research_interests": "examples, testing",
+          "sources": [],
+          "status": "not verified",
+          "title": "Professor"
+        }
+      ]
+    },
+    {
+      "id": "unscored-college",
+      "name": "Unscored College",
+      "city": "Nowhere",
+      "country": "Spain",
+      "batch": 1,
+      "programs": [
+        {
+          "admission_mode": "open",
+          "apply": false,
+          "deadlines": {
+            "winter": "15 Jan",
+            "summer": "15 Jul"
+          },
+          "degree": "Master",
+          "duration": "4 semesters",
+          "fit_score": null,
+          "funding": "No tuition",
+          "gpa_rule": "",
+          "id": "p_m-sc-ai",
+          "language": "English",
+          "name": "M.Sc. Artificial Intelligence",
+          "notes": "Sample note, with a comma.",
+          "official_link": "https://unscored.example.net/ai",
+          "risk_alert": "",
+          "sources": [
+            "https://unscored.example.net/ai"
+          ],
+          "status": "verified on official page",
+          "tuition_eur_per_year": 0,
+          "fit_with_sample": "Good match for the sample applicant."
+        }
+      ],
+      "professors": []
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gradapp"
+dynamic = ["version"]
+description = "Multi-user tracker for graduate applications: plain-file storage, AI profile builder, research-prompt import."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "Flask>=3.0,<4",
+  "waitress>=3.0,<4",
+  "pypdf>=5.0,<7",
+  "python-docx>=1.1,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pyinstaller>=6.0", "build>=1.0"]
+
+[project.scripts]
+gradapp = "gradapp.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "gradapp.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gradapp = ["templates/*.html", "static/*", "static/fonts/*"]

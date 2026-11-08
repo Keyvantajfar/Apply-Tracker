@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "applicant_profile": {
+    "gpa_overall": "3.4"
+  },
+  "resume_text": "Alex Example. Python and statistics.",
+  "settings": {
+    "ai_base_url": "http://localhost:11434/v1",
+    "ai_model": "sample-model"
+  },
+  "ui": {},
+  "updated_at": "2026-01-01"
+}

@@ -1,0 +1,22 @@
+# runtime data: never commit user data
+data/
+*.corrupt-*
+*.log
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+# packaging
+*.spec
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+# local secrets
+.env
