@@ -53,7 +53,7 @@ class Browser(unittest.TestCase):
             self.assertEqual(launcher.find_chromium(), sys.executable)
         cmd = launcher._chromium_cmd("/x/chrome", "http://127.0.0.1:5000/", Path("/p"))
         self.assertIn("--app=http://127.0.0.1:5000/", cmd)
-        self.assertIn("--user-data-dir=/p", cmd)
+        self.assertIn(f"--user-data-dir={Path('/p')}", cmd)
 
 
 @unittest.skipIf(sys.platform == "win32", "uses a shell script as the fake browser")
