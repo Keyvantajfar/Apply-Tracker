@@ -92,7 +92,14 @@ jobs:
           merge-multiple: true
           pattern: "!*.dockerbuild"
       - run: cd artifacts && sha256sum * > SHA256SUMS.txt
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          awk -v v="$v" '$0 ~ "^## \\[" v "\\]" {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "No CHANGELOG.md section for $v"; exit 1; }
+
       - uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
-          generate_release_notes: true
+          body_path: notes.md          # replaces generate_release_notes: true
