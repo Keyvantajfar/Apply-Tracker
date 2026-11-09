@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import os
+import secrets
 import time
 import webbrowser
 import zipfile
@@ -33,6 +34,7 @@ _attempts: dict[str, deque] = defaultdict(deque)
 #   {"heartbeat": bool}  heartbeat=True means the server cannot see the window close, so the page pings us.
 app.config["DESKTOP"] = None
 app.config["LAST_SEEN"] = time.monotonic()
+app.config["BYE"] = 0.0
 
 
 @app.context_processor
@@ -159,6 +161,17 @@ def api_logout():
 @app.get("/healthz")
 def healthz():
     return jsonify({"ok": True, "version": __version__})
+
+
+@app.post("/desktop/bye")
+def desktop_bye():
+    """Sent by the page (sendBeacon) when its window is closing; the launcher then quits the app.
+    Needs the per-run token that only the page itself was given, so another website cannot stop the app."""
+    d = app.config["DESKTOP"]
+    if not d or not secrets.compare_digest(request.args.get("t", ""), d.get("token", "")):
+        return ("", 404)
+    app.config["BYE"] = time.monotonic()
+    return ("", 204)
 
 
 @app.post("/api/open-external")

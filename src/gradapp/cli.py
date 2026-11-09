@@ -25,7 +25,17 @@ def _serve(a: argparse.Namespace) -> int:
 
 def _gui(a: argparse.Namespace) -> int:
     from .desktop.launcher import run
-    return run(port=a.port, mode=a.mode)
+    rc = run(port=a.port, mode=a.mode)
+    # The window is closed: leave for certain. A lingering thread must never keep a process alive
+    # in the Task Manager (this happened on Windows).
+    import logging
+    logging.shutdown()
+    for f in (sys.stdout, sys.stderr):
+        try:
+            f.flush()
+        except Exception:
+            pass
+    os._exit(rc)
 
 
 def _password(prompt: str = "Password: ") -> str:

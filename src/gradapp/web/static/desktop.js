@@ -17,6 +17,10 @@
     if (u && isExternal(u)) { openOutside(u); return null; }
     return nativeOpen.apply(window, arguments);
   };
-  // lets the server quit itself when this page is closed and it cannot watch the window process
+  // tell the server this window is closing (a reload or page change sends it too; the server waits a moment and sees the next request)
+  window.addEventListener('pagehide', function () {
+    try { navigator.sendBeacon('/desktop/bye?t=' + encodeURIComponent(cfg.token || '')); } catch (e) {}
+  });
+  // keeps the server informed that the window is alive, and backs up the close signal if it gets lost
   if (cfg.heartbeat) setInterval(function () { fetch('/healthz', { cache: 'no-store' }).catch(function () {}); }, 20000);
 })();

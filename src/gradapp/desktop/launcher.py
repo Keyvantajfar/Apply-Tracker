@@ -4,6 +4,7 @@ Window, in order of preference:
   1. pywebview  (native window; only if installed:  pip install "gradapp[native]")
   2. an installed Chromium-based browser in --app mode: Edge, Chrome, Chromium, Brave ... (no tabs, no address bar)
   3. the default browser (a normal tab). The server then quits by itself once the tab has been closed.
+The app exits when the window closes: the page reports it, and the process is also ended explicitly (see cli._gui).
 The server stops when the window closes. If a GradApp server already answers on the port, it is reused and left running.
 """
 from __future__ import annotations
@@ -11,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import secrets
 import socket
 import subprocess
 import sys
@@ -24,7 +26,8 @@ from .. import __version__
 
 TITLE = "GradApp"
 PREFERRED_PORT = 5000
-IDLE_LIMIT = 120.0          # seconds without any request before the browser-tab mode quits (page pings every 20 s)
+IDLE_LIMIT = 120.0          # seconds without any request before we assume the window is gone (page pings every 20 s)
+BYE_GRACE = 3.0             # after the page says goodbye, wait this long for a follow-up request (reload / page change)
 
 _LINUX_BROWSERS = ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge",
                    "microsoft-edge-stable", "brave-browser", "brave", "vivaldi")
@@ -102,43 +105,62 @@ def _show_webview(url: str, profile: Path) -> bool:
         return False
 
 
-def _show_chromium(url: str, profile: Path, app) -> bool:
+def _show_chromium(url: str, profile: Path, app, signals: bool = True) -> bool:
     exe = find_chromium()
     if not exe:
         return False
     profile.mkdir(parents=True, exist_ok=True)
-    started = time.monotonic()
     try:
         proc = subprocess.Popen(_chromium_cmd(exe, url, profile), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except OSError:
         return False
+    app.config["DESKTOP"] = {**app.config["DESKTOP"], "heartbeat": True}
     try:
-        proc.wait(timeout=4)
-    except subprocess.TimeoutExpired:
-        proc.wait()                                  # the usual case: lives until the window is closed
-        return True
-    if proc.returncode != 0:
-        return False                                 # e.g. a sandboxed snap that may not use our profile folder
-    # exited at once with success: the browser handed the window to a running instance, so we cannot watch it
-    app.config["DESKTOP"] = {"heartbeat": True}
-    _wait_until_idle(app, started)
-    return True
+        return _watch(app, proc, signals)
+    finally:
+        if proc.poll() is None:                      # the browser may linger in the background (Edge does); it is ours, end it
+            proc.terminate()
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
 
 
-def _show_browser_tab(url: str, app) -> None:
-    app.config["DESKTOP"] = {"heartbeat": True}
+def _show_browser_tab(url: str, app, signals: bool = True) -> None:
+    app.config["DESKTOP"] = {**app.config["DESKTOP"], "heartbeat": True}
     webbrowser.open(url)
     print(f"GradApp is open in your browser at {url}. It quits by itself after you close the tab.", flush=True)
-    _wait_until_idle(app, time.monotonic())
+    _watch(app, None, signals)
 
 
-def _wait_until_idle(app, since: float) -> None:
-    app.config["LAST_SEEN"] = max(app.config["LAST_SEEN"], since)
+def _watch(app, proc, signals: bool = True) -> bool:
+    """Block until the window is gone. Three signals, because no single one is reliable on every OS:
+    the page says goodbye (pagehide), the window process exits, or nothing has been heard for IDLE_LIMIT.
+    signals=False when the server belongs to another process (we cannot hear the page): only the window process counts.
+    Returns False only if the browser failed to start at all (exit code != 0 within a few seconds)."""
+    started = time.monotonic()
     try:
-        while time.monotonic() - app.config["LAST_SEEN"] < IDLE_LIMIT:
-            time.sleep(2)
+        while True:
+            now = time.monotonic()
+            if proc is not None and proc.poll() is not None:
+                if now - started < 4 and proc.returncode != 0:
+                    return False                     # e.g. a sandboxed snap that may not use our profile folder
+                if now - started >= 4:
+                    return True                      # window process ended = window closed
+                proc = None                          # exited at once with success: handed to a running browser; rely on the page
+            if not signals:
+                if proc is None:
+                    return True                      # nothing left that we can watch
+                time.sleep(0.4)
+                continue
+            bye, seen = app.config["BYE"], app.config["LAST_SEEN"]
+            if bye > started and now - bye > BYE_GRACE and seen <= bye:
+                return True                          # window said goodbye and nothing followed (a reload would have)
+            if now - max(seen, started) > IDLE_LIMIT:
+                return True
+            time.sleep(0.4)
     except KeyboardInterrupt:
-        pass
+        return True
 
 
 # ---------- entry point ----------
@@ -164,12 +186,12 @@ def run(host: str = "127.0.0.1", port: int | None = None, mode: str = "auto") ->
             if is_gradapp(host, port):
                 break
             time.sleep(0.1)
-    app.config["DESKTOP"] = {"heartbeat": False}
+    app.config["DESKTOP"] = {"heartbeat": False, "token": secrets.token_urlsafe(16)}
     try:
         shown = (mode in ("auto", "webview") and _show_webview(url, profile)) \
-            or (mode in ("auto", "app") and _show_chromium(url, profile, app))
+            or (mode in ("auto", "app") and _show_chromium(url, profile, app, server is not None))
         if not shown:
-            _show_browser_tab(url, app)
+            _show_browser_tab(url, app, server is not None)
     finally:
         if server is not None:
             server.close()

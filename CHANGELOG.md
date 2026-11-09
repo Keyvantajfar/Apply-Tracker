@@ -2,6 +2,10 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com), versions follow [SemVer](https://semver.org).
 
+## [1.1.1] - 2026-11-09
+### Fixed
+- Windows: the app stayed in Task Manager after its window was closed (Edge can keep its own process alive, so waiting for it never ended). The window now tells the app when it closes, the app ends the browser process it started, and always exits the process itself.
+
 ## [1.1.0] - 2026-11-09
 ### Added
 - App-style window: the downloaded app (and `gradapp gui`) opens in its own window with no tabs or address bar, instead of a console plus a browser tab. Uses pywebview if installed (`pip install "gradapp[native]"`), otherwise a Chromium-based browser (Edge, Chrome, Chromium, Brave) in app mode, otherwise your default browser. Closing the window stops the server.

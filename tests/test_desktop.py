@@ -80,6 +80,22 @@ class Lifecycle(unittest.TestCase):
         self.assertIn("desktop.js", html)
         self.assertFalse(launcher.is_gradapp("127.0.0.1", port))      # server was stopped with the window
 
+    def test_closing_the_page_ends_the_app_even_if_the_browser_process_lingers(self):
+        """Edge on Windows can keep its process alive after the window is closed: the page's goodbye must be enough."""
+        import time
+        # the "browser": reads the run token from the page, says goodbye like pagehide does, then lingers for 60 s
+        fake = self._fake_browser(f'''
+            url="${{1#--app=}}"
+            {sys.executable} -c "import re,sys,urllib.request as u;h=u.urlopen(sys.argv[1]+'login').read().decode();t=re.search(r'\\"token\\": ?\\"([^\\"]+)',h).group(1);u.urlopen(u.Request(sys.argv[1]+'desktop/bye?t='+t,method='POST'))" "$url"
+            sleep 60
+        ''')
+        t0 = time.monotonic()
+        with mock.patch.dict(os.environ, {"GRADAPP_BROWSER": fake}):
+            port = launcher._free_port("127.0.0.1")
+            self.assertEqual(launcher.run(port=port, mode="app"), 0)
+        self.assertLess(time.monotonic() - t0, 20)
+        self.assertFalse(launcher.is_gradapp("127.0.0.1", port))
+
     def test_unusable_browser_falls_back_to_a_tab_that_quits_when_idle(self):
         fake = self._fake_browser("exit 1\n")
         with mock.patch.dict(os.environ, {"GRADAPP_BROWSER": fake}), \
@@ -121,6 +137,15 @@ class ExternalLinks(unittest.TestCase):
 
     def test_disabled_outside_the_desktop_window(self):
         self.assertEqual(self.c.post("/api/open-external", json={"url": "https://example.org"}, headers=H).status_code, 404)
+
+    def test_goodbye_needs_the_run_token(self):
+        self.app.config["DESKTOP"] = {"heartbeat": True, "token": "abc"}
+        self.app.config["BYE"] = 0.0
+        self.assertEqual(self.c.post("/desktop/bye").status_code, 404)
+        self.assertEqual(self.c.post("/desktop/bye?t=wrong").status_code, 404)
+        self.assertEqual(self.app.config["BYE"], 0.0)
+        self.assertEqual(self.c.post("/desktop/bye?t=abc").status_code, 204)
+        self.assertGreater(self.app.config["BYE"], 0.0)
 
     def test_only_http_links_open(self):
         self.app.config["DESKTOP"] = {"heartbeat": False}
