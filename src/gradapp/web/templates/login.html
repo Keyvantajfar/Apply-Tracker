@@ -48,9 +48,12 @@
       body:JSON.stringify({username:form.username.value,password:form.password.value,display_name:form.display_name.value})
     }).then(function(r){return r.json().then(function(j){return [r.ok,j]})}).then(function(x){
       if(x[0]) location.href='/'; else {err.textContent=x[1].error||'Could not sign in.'; go.disabled=false;}
-    }).catch(function(){err.textContent='Cannot reach the server. Is app.py still running?'; go.disabled=false;});
+    }).catch(function(){err.textContent='Cannot reach the server. Is GradApp still running?'; go.disabled=false;});
   });
 })();
 </script>
+{% if desktop %}<script>window.__DESKTOP__ = {{ desktop|tojson }};</script>
+<script src="{{ url_for('static', filename='desktop.js') }}"></script>
+{% endif %}
 </body>
 </html>

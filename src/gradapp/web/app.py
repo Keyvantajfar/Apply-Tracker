@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 import os
 import time
+import webbrowser
 import zipfile
 from collections import defaultdict, deque
 from functools import wraps
@@ -27,6 +28,21 @@ app.config.update(SECRET_KEY=secret_key(), MAX_CONTENT_LENGTH=25 * 1024 * 1024, 
                   JSON_AS_ASCII=False, TEMPLATES_AUTO_RELOAD=False)
 
 _attempts: dict[str, deque] = defaultdict(deque)
+
+# Set by gradapp.desktop when the UI runs inside an app window instead of a normal browser tab.
+#   {"heartbeat": bool}  heartbeat=True means the server cannot see the window close, so the page pings us.
+app.config["DESKTOP"] = None
+app.config["LAST_SEEN"] = time.monotonic()
+
+
+@app.context_processor
+def _desktop_flag():
+    return {"desktop": app.config["DESKTOP"]}
+
+
+@app.before_request
+def _seen():
+    app.config["LAST_SEEN"] = time.monotonic()
 
 
 # ---------- plumbing ----------
@@ -143,6 +159,19 @@ def api_logout():
 @app.get("/healthz")
 def healthz():
     return jsonify({"ok": True, "version": __version__})
+
+
+@app.post("/api/open-external")
+@login_required
+def open_external():
+    """Desktop window only: open an http(s) link in the system browser (the window itself is not a browser)."""
+    if not app.config["DESKTOP"]:
+        return err("Not available.", 404)
+    url = str((request.get_json(silent=True) or {}).get("url", ""))
+    if not url.lower().startswith(("http://", "https://")):
+        return err("Only http(s) links can be opened.")
+    webbrowser.open(url)
+    return jsonify({"ok": True})
 
 
 # ---------- state ----------

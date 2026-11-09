@@ -1,4 +1,4 @@
-"""Command line:  gradapp  [serve | list | add-user | set-password | check | repair | registration | import-legacy | version]"""
+"""Command line:  gradapp  [gui | serve | list | add-user | set-password | check | repair | registration | import-legacy | version]"""
 from __future__ import annotations
 
 import argparse
@@ -23,6 +23,11 @@ def _serve(a: argparse.Namespace) -> int:
     return 0
 
 
+def _gui(a: argparse.Namespace) -> int:
+    from .desktop.launcher import run
+    return run(port=a.port, mode=a.mode)
+
+
 def _password(prompt: str = "Password: ") -> str:
     return os.environ.get("GRADAPP_PASSWORD") or getpass.getpass(prompt)
 
@@ -31,6 +36,10 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="gradapp", description="Multi-user tracker for graduate applications.")
     p.add_argument("--version", action="version", version=f"gradapp {__version__}")
     sub = p.add_subparsers(dest="cmd")
+    g = sub.add_parser("gui", help="open GradApp in its own window (default for the downloaded binaries)")
+    g.add_argument("--port", type=int, default=None)
+    g.add_argument("--mode", choices=["auto", "webview", "app", "browser"], default="auto",
+                   help="window type: native (pywebview), Chromium app window, or a plain browser tab")
     s = sub.add_parser("serve", help="start the web app (default)")
     s.add_argument("--host", default=os.environ.get("GRADAPP_HOST", "127.0.0.1"))
     s.add_argument("--port", type=int, default=int(os.environ.get("GRADAPP_PORT", "5000")))
@@ -45,9 +54,15 @@ def main(argv: list[str] | None = None) -> int:
     x.add_argument("folder"); x.add_argument("--user", required=True)
     sub.add_parser("version", help="print version")
     a = p.parse_args(argv)
-    if a.cmd in (None, "serve"):
-        if a.cmd is None:
-            a = p.parse_args(["serve"])
+    frozen = bool(getattr(sys, "frozen", False))
+    if a.cmd is None:                    # double-clicked binary -> window; pip/Docker/terminal -> web server as before
+        a = p.parse_args(["gui" if frozen else "serve"])
+    if a.cmd == "gui" or frozen:
+        from .core.paths import apply_default_data_dir
+        apply_default_data_dir()         # before anything imports gradapp.core.storage
+    if a.cmd == "gui":
+        return _gui(a)
+    if a.cmd == "serve":
         return _serve(a)
     if a.cmd == "version":
         print(__version__); return 0

@@ -78,7 +78,7 @@ async function api(method, url, body, opts = {}) {
   if (body instanceof FormData) init.body = body;
   else if (body !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(body); }
   let res, data;
-  try { res = await fetch(url, init); } catch { throw new Error('Cannot reach the server. Is app.py still running?'); }
+  try { res = await fetch(url, init); } catch { throw new Error('Cannot reach the server. Is GradApp still running?'); }
   try { data = await res.json(); } catch { data = { ok: false, error: 'The server sent an unreadable reply.' }; }
   if (res.status === 401) { location.href = '/login'; throw new Error('Signed out.'); }
   if (!res.ok || data.ok === false) { const e = new Error(data.error || `Request failed (${res.status})`); e.data = data; e.status = res.status; throw e; }

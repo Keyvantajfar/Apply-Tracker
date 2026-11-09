@@ -16,7 +16,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pyinstaller>=6.0", "build>=1.0"]
+dev = ["pyinstaller>=6.0", "build>=1.0", "pillow>=10"]
+native = ["pywebview>=5.0"]   # optional: a true native window instead of a Chromium app window
 
 [project.scripts]
 gradapp = "gradapp.cli:main"

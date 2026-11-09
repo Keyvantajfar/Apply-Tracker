@@ -18,6 +18,9 @@
 <div class="scrim" id="scrim" hidden></div>
 <div class="modal-host" id="modal" hidden></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+{% if desktop %}<script>window.__DESKTOP__ = {{ desktop|tojson }};</script>
+<script src="{{ url_for('static', filename='desktop.js') }}"></script>
+{% endif %}
 <script>window.__USER__ = {{ user|tojson }};</script>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
