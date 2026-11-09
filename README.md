@@ -12,19 +12,32 @@ research done by any AI through a ready-made prompt.
 Pick one:
 
 ```bash
-# 1. Binary: download gradapp-<os>-<arch> from the Releases page, then
-./gradapp                      # opens on http://127.0.0.1:5000
+# 1. App: download from the Releases page and open it. It shows GradApp in its own window.
+#    Windows: gradapp-windows-<arch>.exe     macOS: unzip gradapp-macos-<arch>.app.zip, open GradApp.app
+#    Linux:   chmod +x gradapp-linux-<arch> && ./gradapp-linux-<arch>
 
 # 2. Python 3.10+
-pip install gradapp-2.0.0-py3-none-any.whl     # from the Releases page, or: pip install .
+pip install gradapp-1.1.0-py3-none-any.whl     # from the Releases page, or: pip install .
 gradapp
 
 # 3. Docker
 docker run -p 127.0.0.1:5000:5000 -v gradapp-data:/data ghcr.io/OWNER/gradapp:latest
 ```
 
-Open http://127.0.0.1:5000 and click **Create account** (first account, nothing is pre-created).
-Data is written to `./data` in the folder you start it from (Docker: `/data`). Override with `GRADAPP_DATA`.
+Click **Create account** (first account, nothing is pre-created). With pip or Docker, open http://127.0.0.1:5000 yourself,
+or run `gradapp gui` to get the app window.
+
+Data location: the downloaded app uses your user folder (`%APPDATA%\GradApp`, `~/Library/Application Support/GradApp`,
+`~/.local/share/gradapp`); pip uses `./data` in the folder you start it from; Docker uses `/data`. An existing `./data`
+folder is still picked up by the app. Override everything with `GRADAPP_DATA`.
+
+**About the window.** It is your Chromium-based browser (Edge on Windows, otherwise Chrome, Chromium or Brave) opened in
+app mode with its own profile, so there are no tabs or address bar. If none is installed, GradApp falls back to a normal
+browser tab and quits by itself after you close it. For a true native window: `pip install "gradapp[native]"`
+(WebView2 on Windows, WebKit on macOS, GTK/Qt WebKit on Linux). `gradapp gui --mode app|webview|browser` forces one.
+
+**macOS:** the app is not signed, so Gatekeeper may refuse the first launch. Right-click, Open, or run
+`xattr -dr com.apple.quarantine GradApp.app`.
 
 ## Configuration (environment variables)
 
@@ -41,6 +54,7 @@ It is built for personal or small-group use, not for a public multi-tenant site.
 ## Commands
 
 ```
+gradapp gui [--port P] [--mode auto|webview|app|browser]   # app window (default for the binaries)
 gradapp serve [--host H] [--port P] [--dev]
 gradapp add-user NAME            # password from prompt or GRADAPP_PASSWORD
 gradapp set-password NAME
@@ -85,12 +99,22 @@ data/logs/app.log
 Corrupt files are quarantined as `*.corrupt-<time>` and the app keeps running. Settings has an
 "Everything (zip)" export.
 
+## Code layout
+
+```
+src/gradapp/
+  core/      backend library: storage, accounts, models, scoring, AI client, importer (no Flask; reusable)
+  web/       Flask routes + browser UI (templates/, static/)
+  desktop/   app-window launcher (gradapp gui)
+  cli.py     the gradapp command
+```
+
 ## Development
 
 ```bash
 pip install -e ".[dev]"
 python -m unittest discover -s tests -v
-python packaging/build_binary.py     # single-file executable for this OS -> dist/
+python packaging/build_binary.py     # app for this OS -> dist/ (.exe, .app.zip or Linux binary)
 python -m build                      # wheel + sdist -> dist/
 ```
 
