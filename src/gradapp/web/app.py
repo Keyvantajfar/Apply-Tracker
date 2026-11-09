@@ -1,4 +1,4 @@
-"""GradApp - multi-user graduate application tracker. Run: python app.py  ->  http://127.0.0.1:5000"""
+"""Web layer: Flask routes + the browser UI (templates/, static/). All logic lives in gradapp.core."""
 from __future__ import annotations
 
 import io
@@ -11,11 +11,11 @@ from typing import Any
 
 from flask import Flask, Response, jsonify, redirect, render_template, request, send_file, session, url_for
 
-from . import __version__
-from .core import ai, importer, models, scoring
-from .core.resume import extract_text
-from .core.storage import DATA_DIR, log, now_iso, setup_logging, csv_text
-from .core.users import (Workspace, config, create_user, secret_key, user_exists, verify_login)
+from .. import __version__
+from ..core import ai, importer, models, scoring
+from ..core.resume import extract_text
+from ..core.storage import DATA_DIR, log, now_iso, setup_logging, csv_text
+from ..core.users import (Workspace, config, create_user, secret_key, user_exists, verify_login)
 
 setup_logging()
 DATA_DIR.mkdir(parents=True, exist_ok=True)

@@ -10,7 +10,7 @@ from . import __version__
 
 
 def _serve(a: argparse.Namespace) -> int:
-    from .app import app
+    from .web.app import app
     from .core.storage import DATA_DIR, log
     host, port = a.host, a.port
     log.info("GradApp %s at http://%s:%s  (data in %s)", __version__, host, port, DATA_DIR)

@@ -270,7 +270,7 @@ class V2Labels(unittest.TestCase):
 class WebApp(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from gradapp import app as A
+        from gradapp.web import app as A
         from gradapp.core.migrate import import_legacy
         from gradapp.core.users import Workspace, create_user
         create_user("tester", "pass1234")
@@ -409,3 +409,15 @@ class WebApp(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Layering(unittest.TestCase):
+    def test_core_is_usable_without_the_web_or_desktop_layers(self):
+        """gradapp.core must stay importable by other programs: no Flask, no web, no desktop."""
+        import subprocess
+        code = ("import sys, gradapp.core.users, gradapp.core.importer, gradapp.core.ai, gradapp.core.migrate;"
+                "bad=[m for m in sys.modules if m=='flask' or m.startswith(('gradapp.web','gradapp.desktop'))];"
+                "print(bad); sys.exit(1 if bad else 0)")
+        r = subprocess.run([sys.executable, "-c", code], env={**os.environ, "GRADAPP_DATA": _TMP},
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)

@@ -7,12 +7,12 @@ import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
-src = root / "src" / "gradapp"
+src = root / "src" / "gradapp" / "web"
 sep = ";" if sys.platform == "win32" else ":"
 subprocess.check_call([
     sys.executable, "-m", "PyInstaller", "--onefile", "--clean", "--noconfirm", "--name", "gradapp",
-    "--add-data", f"{src / 'templates'}{sep}gradapp/templates",
-    "--add-data", f"{src / 'static'}{sep}gradapp/static",
+    "--add-data", f"{src / 'templates'}{sep}gradapp/web/templates",
+    "--add-data", f"{src / 'static'}{sep}gradapp/web/static",
     "--collect-submodules", "gradapp", "--collect-submodules", "waitress",
     "--distpath", str(root / "dist" / "pyi"), "--workpath", str(root / "build"), "--specpath", str(root / "build"),
     str(root / "packaging" / "gradapp_entry.py"),

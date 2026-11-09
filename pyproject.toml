@@ -28,4 +28,4 @@ version = { attr = "gradapp.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-gradapp = ["templates/*.html", "static/*", "static/fonts/*"]
+gradapp = ["web/templates/*.html", "web/static/*", "web/static/fonts/*"]
