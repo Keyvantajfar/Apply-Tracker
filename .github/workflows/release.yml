@@ -1,5 +1,5 @@
 name: Release
-# I should push a tag such as v1.0.1 to publish: wheel + sdist, binaries for Linux/Windows/macOS, Docker image on ghcr.io.
+# Push a tag such as v1.1.0 to publish: wheel + sdist, binaries for Linux/Windows/macOS, Docker image on ghcr.io.
 on:
   push:
     tags: ["v*"]
@@ -48,12 +48,24 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install -e ".[dev]"
       - run: python packaging/build_binary.py
-      - name: Smoke test
+      - name: Smoke test (start the server from the built app, ask /healthz)
         shell: bash
         run: |
-          f=$(ls dist/gradapp-*)
-          chmod +x "$f" || true
-          "$f" version
+          export GRADAPP_DATA="$RUNNER_TEMP/gradapp-smoke"
+          case "$RUNNER_OS" in
+            macOS) mkdir smoke && ditto -x -k dist/gradapp-macos-*.app.zip smoke && exe=smoke/GradApp.app/Contents/MacOS/GradApp ;;
+            Windows) exe=$(ls dist/gradapp-windows-*.exe) ;;
+            *) exe=$(ls dist/gradapp-linux-*); chmod +x "$exe" ;;
+          esac
+          "$exe" serve --port 5199 &
+          pid=$!
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5199/healthz; then ok=1; break; fi
+            sleep 1
+          done
+          kill $pid || true
+          [ "$ok" = 1 ] || { echo "app did not start"; exit 1; }
       - uses: actions/upload-artifact@v4
         with: { name: "binary-${{ matrix.os }}", path: "dist/gradapp-*" }
   docker:
